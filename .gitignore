@@ -1,0 +1,53 @@
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+pnpm-debug.log*
+
+# Environment variables / secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+logs/
+*.log
+app.log
+
+# Runtime data
+pids/
+*.pid
+*.pid.lock
+
+# Coverage
+coverage/
+.nyc_output/
+
+# Build output
+dist/
+build/
+
+# SQLite databases
+*.sqlite
+*.sqlite3
+*.db
+data/
+db/
+
+# Postgres dumps / backups
+*.sql
+*.dump
+*.backup
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# whatever
+notes.md

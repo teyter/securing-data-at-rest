@@ -1,0 +1,123 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Secrets</title>
+</head>
+<body>
+  <h1>Store a Secret</h1>
+
+  <input id="label" placeholder="label (optional)" />
+  <input id="data" placeholder="secret data" />
+  <button id="save">Save</button>
+
+  <pre id="status"></pre>
+
+  <h2>My Secrets</h2>
+  <button id="list">Refresh List</button>
+  <ul id="items"></ul>
+
+  <h2>Selected Secret</h2>
+  <div><b>ID:</b> <span id="sid"></span></div>
+  <div><b>Label:</b> <span id="slabel"></span></div>
+  <div><b>Created:</b> <span id="screated"></span></div>
+
+  <h3>Encrypted (stored in DB)</h3>
+  <pre id="enc" style="white-space: pre-wrap; word-break: break-all;"></pre>
+
+  <h3>Decrypted (plaintext)</h3>
+  <pre id="dec" style="white-space: pre-wrap; word-break: break-all;"></pre>
+
+  <button id="logout">Logout</button>
+
+  <script>
+    const statusEl = document.getElementById("status");
+    const itemsEl = document.getElementById("items");
+
+    const sidEl = document.getElementById("sid");
+    const slabelEl = document.getElementById("slabel");
+    const screatedEl = document.getElementById("screated");
+    const encEl = document.getElementById("enc");
+    const decEl = document.getElementById("dec");
+
+    async function post(path, body) {
+      const r = await fetch(path, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify(body)
+      });
+      return r.json();
+    }
+
+    async function get(path) {
+      const r = await fetch(path, { credentials: "include" });
+      return r.json();
+    }
+
+    async function refreshList() {
+      const out = await get("/my-secrets");
+      itemsEl.innerHTML = "";
+
+      if (!out.ok) {
+        statusEl.textContent = JSON.stringify(out, null, 2);
+        return;
+      }
+
+      for (const item of out.items) {
+        const li = document.createElement("li");
+        li.style.cursor = "pointer";
+        li.textContent = `#${item.id} — ${item.label} (${item.created_at})`;
+
+        li.onclick = () => selectSecret(item.id);
+        itemsEl.appendChild(li);
+      }
+    }
+
+    async function selectSecret(id) {
+      // fetch encrypted blob
+      const raw = await get(`/secret-raw/${id}`);
+      if (!raw.ok) {
+        statusEl.textContent = JSON.stringify(raw, null, 2);
+        return;
+      }
+
+      // fetch decrypted plaintext
+      const dec = await get(`/secret/${id}`);
+      if (!dec.ok) {
+        statusEl.textContent = JSON.stringify(dec, null, 2);
+        return;
+      }
+
+      sidEl.textContent = raw.id;
+      slabelEl.textContent = raw.label;
+      screatedEl.textContent = raw.created_at;
+
+      encEl.textContent = raw.enc_data;     // what's stored in DB
+      decEl.textContent = dec.data;         // decrypted plaintext
+    }
+
+    document.getElementById("save").onclick = async () => {
+      const label = document.getElementById("label").value;
+      const data = document.getElementById("data").value;
+
+      const out = await post("/secret", { label, data });
+      statusEl.textContent = JSON.stringify(out, null, 2);
+
+      if (out.ok) {
+        document.getElementById("data").value = "";
+        await refreshList();
+        await selectSecret(out.secretId);
+      }
+    };
+
+    document.getElementById("list").onclick = refreshList;
+
+    document.getElementById("logout").onclick = async () => {
+      await post("/logout", {});
+      window.location.href = "/login.html";
+    };
+    refreshList();
+  </script>
+</body>
+</html>
