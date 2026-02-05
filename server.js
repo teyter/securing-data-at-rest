@@ -49,15 +49,15 @@ CREATE TABLE IF NOT EXISTS secrets (
 );
 `);
 
-const { seedIfNeeded } = require("./seed_if_needed");
 
+const MASTER_KEY = Buffer.from(process.env.MASTER_KEY_BASE64, "base64");
+if (MASTER_KEY.length !== 32) throw new Error("MASTER_KEY must be 32 bytes base64");
+
+const { seedIfNeeded } = require("./seed_if_needed");
 seedIfNeeded(db, MASTER_KEY).catch(err => {
   console.error("Seeding failed:", err);
   process.exit(1);
 });
-
-const MASTER_KEY = Buffer.from(process.env.MASTER_KEY_BASE64, "base64");
-if (MASTER_KEY.length !== 32) throw new Error("MASTER_KEY must be 32 bytes base64");
 
 // --- helpers
 function requireAuth(req, res, next) {
