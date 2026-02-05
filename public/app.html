@@ -100,11 +100,12 @@
     document.getElementById("save").onclick = async () => {
       const label = document.getElementById("label").value;
       const data = document.getElementById("data").value;
-
+    
       const out = await post("/secret", { label, data });
       statusEl.textContent = JSON.stringify(out, null, 2);
-
+    
       if (out.ok) {
+        document.getElementById("label").value = "";
         document.getElementById("data").value = "";
         await refreshList();
         await selectSecret(out.secretId);
