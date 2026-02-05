@@ -27,6 +27,14 @@ app.get("/app.html", (req, res, next) => {
   next();
 });
 
+// if already logged in, don't show login page
+app.get("/login.html", (req, res, next) => {
+  if (req.session.userId) {
+    return res.redirect("/app.html");
+  }
+  next();
+});
+
 app.use(express.static("public"));
 
 const db = new Database("app.db");
