@@ -7,6 +7,5 @@ A web app that stores and encrypts secrets for Bob and Alice
 | Alice | `alice`  | `alice_password123` |
 | Bob   | `bob`    | `bob_password123`   |
 
-Original repo
-
+### Original repo
 `https://github.com/teyter/applied-cryptography/tree/main/assignment04`
