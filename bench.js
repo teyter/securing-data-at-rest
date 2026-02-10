@@ -6,6 +6,23 @@ const { encryptGCM, decryptGCM } = require("./crypto_helpers");
 
 const db = new Database("app.db");
 
+db.exec(`
+CREATE TABLE IF NOT EXISTS users (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  username TEXT UNIQUE NOT NULL,
+  password_hash TEXT NOT NULL,
+  enc_user_key TEXT NOT NULL
+);
+CREATE TABLE IF NOT EXISTS secrets (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  user_id INTEGER NOT NULL,
+  label TEXT NOT NULL,
+  enc_data TEXT NOT NULL,
+  created_at TEXT NOT NULL DEFAULT (datetime('now')),
+  FOREIGN KEY(user_id) REFERENCES users(id)
+);
+`);
+
 const MASTER_KEY = Buffer.from(process.env.MASTER_KEY_BASE64, "base64");
 if (MASTER_KEY.length !== 32) throw new Error("MASTER_KEY must be 32 bytes base64");
 
