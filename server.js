@@ -16,7 +16,11 @@ app.use(session({
   secret: process.env.SESSION_SECRET,
   resave: false,
   saveUninitialized: false,
-  cookie: { httpOnly: true }
+  cookie: {
+    httpOnly: true,
+    secure: true,
+    sameSite: "strict"
+  }
 }));
 
 // prevent unauthenticated users from directly loading app.html
@@ -158,6 +162,16 @@ app.get("/my-secrets", requireAuth, (req, res) => {
   res.json({ ok: true, items: rows });
 });
 
-app.listen(3000, () => console.log("http://localhost:3000"));
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Listening on ${PORT}`));
+const https = require("https");
+const fs = require("fs");
+
+const options = {
+  key: fs.readFileSync("./cert/key.pem"),
+  cert: fs.readFileSync("./cert/cert.pem"),
+  minVersion: "TLSv1.2"
+};
+
+https.createServer(options, app).listen(PORT, () => {
+  console.log(`HTTPS server running on https://localhost:${PORT}`);
+});
